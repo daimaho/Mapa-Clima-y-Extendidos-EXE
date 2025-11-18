@@ -21,7 +21,7 @@ const MapLocationCard: React.FC<MapLocationCardProps> = ({ locationName, weather
     >
       <div 
         className="relative w-full h-full bg-cover bg-center text-white flex flex-col items-center justify-between p-1 rounded-lg shadow-2xl"
-        style={{ backgroundImage: "url('cont_1.webp')" }}
+        style={{ backgroundImage: "url('assets/cont_1.webp')" }}
       >
         <div className="bg-[#E6007E] text-center w-full py-1 rounded-md">
           <h3 className="font-bold text-base leading-tight tracking-wide">{locationName}</h3>
@@ -38,7 +38,7 @@ const MapLocationCard: React.FC<MapLocationCardProps> = ({ locationName, weather
 
         <div className="w-24 h-24 mb-1">
           <video
-            src={`${ICON_PATH}${weather.icon}`}
+            src={`assets/${ICON_PATH}${weather.icon}`}
             autoPlay
             loop
             muted

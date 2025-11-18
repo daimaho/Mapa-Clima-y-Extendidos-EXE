@@ -20,7 +20,7 @@ export const MAP_DISPLAY_LOCATIONS = [
   { name: "JUAN JOSÉ CASTELLI", shortName: "J.J. CASTELLI", pos: { top: '24%', left: '44%' } },
   { name: "GANCEDO", shortName: "GANCEDO", pos: { top: '59%', left: '38%' } },
   { name: "CHARATA", shortName: "CHARATA", pos: { top: '49%', left: '46%' } },
-  { name: "VILLA ÁNGELA", shortName: "VILLA ANGELA", pos: { top: '71%', left: '48%' } },
+  { name: "VILLA ÁNGELA", shortName: "VILLA ÁNGELA", pos: { top: '71%', left: '48%' } },
   { name: "SÁENZ PEÑA", shortName: "SÁENZ PEÑA", pos: { top: '45%', left: '54%' } },
   { name: "SAN MARTÍN", shortName: "SAN MARTÍN", pos: { top: '43%', left: '64%' } },
   { name: "CHARADAI", shortName: "CHARADAI", pos: { top: '67%', left: '58%' } },
