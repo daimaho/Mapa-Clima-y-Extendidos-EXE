@@ -1,6 +1,6 @@
 import React from 'react';
-import { CurrentWeather } from '../types';
-import { ICON_PATH } from '../constants';
+import { CurrentWeather } from './types';
+import { ICON_PATH } from './constants';
 
 interface MapLocationCardProps {
   locationName: string;

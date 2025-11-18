@@ -29,9 +29,9 @@ export interface TimeOfDayForecast {
 
 export interface ProcessedLocationData {
   location: Location;
-  forecasts: ForecastDay[];
-  currentWeather: CurrentWeather;
-  timeOfDayForecasts: TimeOfDayForecast[];
+  forecast: ForecastDay[];
+  current: CurrentWeather;
+  todayForecast: TimeOfDayForecast[];
 }
 
 // Interfaces for OpenWeatherMap API response

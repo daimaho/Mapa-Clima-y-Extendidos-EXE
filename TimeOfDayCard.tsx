@@ -1,6 +1,6 @@
 import React from 'react';
-import { TimeOfDayForecast } from '../types';
-import { ICON_PATH } from '../constants';
+import { TimeOfDayForecast } from './types';
+import { ICON_PATH } from './constants';
 
 interface TimeOfDayCardProps {
   forecast: TimeOfDayForecast;

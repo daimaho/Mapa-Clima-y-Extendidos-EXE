@@ -1,6 +1,6 @@
 import React from 'react';
-import { ForecastDay } from '../types';
-import { ICON_PATH } from '../constants';
+import { ForecastDay } from './types';
+import { ICON_PATH } from './constants';
 
 interface WeatherCardProps {
   forecast: ForecastDay;
