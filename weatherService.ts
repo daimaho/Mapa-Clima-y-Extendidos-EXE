@@ -61,7 +61,10 @@ function mapWeatherIcon(weatherId: number, iconCode: string): string {
     return weatherId >= range[0] && weatherId <= range[1];
   });
 
-  return conditionKey ? `${prefix}${conditionKey}.webm` : `${prefix}clear.webm`;
+  // Ruta correcta: icons/ + nombre.webm (sin el "1" al final)
+  return conditionKey 
+    ? `icons/${prefix}${conditionKey}.webm` 
+    : `icons/${prefix}clear.webm`;
 }
 
 function processDailyForecast(list: any[]): ForecastDay[] {

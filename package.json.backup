@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "weather-forecast-tv-board",
   "private": true,
   "version": "1.0.0",
@@ -42,6 +42,12 @@
       "electron.cjs",
       "package.json",
       "icon.ico"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/assets",
+        "to": "assets"
+      }
     ],
     "win": {
       "target": [

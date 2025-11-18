@@ -41,3 +41,5 @@ const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
 };
 
 export default TimeOfDayCard;
+
+
