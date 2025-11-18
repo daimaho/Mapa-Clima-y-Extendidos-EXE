@@ -1,22 +1,11 @@
 import React from 'react';
 import { ProcessedLocationData } from '../types';
 import MapLocationCard from '../MapLocationCard';
+import { MAP_DISPLAY_LOCATIONS } from '../constants';
 
 interface WeatherMapProps {
   allWeatherData: ProcessedLocationData[];
 }
-
-const locationPositions: { [key: string]: { top: string; left: string } } = {
-  'Resistencia': { top: '45%', left: '50%' },
-  'Presidencia Roque Sáenz Peña': { top: '35%', left: '65%' },
-  'Villa Ángela': { top: '25%', left: '55%' },
-  'Charata': { top: '30%', left: '75%' },
-  'General San Martín': { top: '50%', left: '70%' },
-  'Las Breñas': { top: '40%', left: '80%' },
-  'Corzuela': { top: '45%', left: '85%' },
-  'Makallé': { top: '55%', left: '60%' },
-  'Hermoso Campo': { top: '35%', left: '40%' },
-};
 
 const WeatherMap: React.FC<WeatherMapProps> = ({ allWeatherData }) => {
   return (
@@ -31,7 +20,8 @@ const WeatherMap: React.FC<WeatherMapProps> = ({ allWeatherData }) => {
         </div>
         
         {allWeatherData.map((data) => {
-          const position = locationPositions[data.location.name] || { top: '50%', left: '50%' };
+          const mapLocation = MAP_DISPLAY_LOCATIONS.find(loc => loc.name === data.location.name);
+          const position = mapLocation?.pos || { top: '50%', left: '50%' };
           return (
             <MapLocationCard
               key={data.location.name}
