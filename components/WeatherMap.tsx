@@ -21,7 +21,7 @@ const locationPositions: { [key: string]: { top: string; left: string } } = {
 const WeatherMap: React.FC<WeatherMapProps> = ({ allWeatherData }) => {
   return (
     <div className="absolute inset-0 flex items-center justify-center p-8">
-      <div className="relative w-full h-full max-w-7xl max-h-[900px] bg-black/30 backdrop-blur-sm rounded-3xl overflow-hidden">
+      <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] rounded-3xl overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <img 
             src="/mapa_chaco.png" 
