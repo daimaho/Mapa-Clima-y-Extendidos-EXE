@@ -1,6 +1,6 @@
 import React from 'react';
-import { TimeOfDayForecast } from '../types';
-import { ICON_PATH } from '../constants';
+import { TimeOfDayForecast } from './types';
+import { ICON_PATH } from './constants';
 
 interface TimeOfDayCardProps {
   forecast: TimeOfDayForecast;
@@ -10,7 +10,7 @@ const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
   return (
     <div 
         className="relative w-[380px] h-[530px] bg-cover bg-center text-white flex flex-col items-center justify-between p-3 shadow-2xl rounded-2xl overflow-hidden"
-        style={{ backgroundImage: "url('/cont_3.webp')" }}
+        style={{ backgroundImage: "url('cont_3.webp')" }}
     >
         <div className="bg-[#E6007E] text-center w-full py-1.5 rounded-lg mt-1">
             <h3 className="font-bold text-3xl tracking-wider">{forecast.period}</h3>

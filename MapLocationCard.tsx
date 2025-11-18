@@ -1,6 +1,6 @@
 import React from 'react';
-import { CurrentWeather } from '../types';
-import { ICON_PATH } from '../constants';
+import { CurrentWeather } from './types';
+import { ICON_PATH } from './constants';
 
 interface MapLocationCardProps {
   locationName: string;
@@ -21,7 +21,7 @@ const MapLocationCard: React.FC<MapLocationCardProps> = ({ locationName, weather
     >
       <div 
         className="relative w-full h-full bg-cover bg-center text-white flex flex-col items-center justify-between p-1 rounded-lg shadow-2xl"
-        style={{ backgroundImage: "url('/cont_1.webp')" }}
+        style={{ backgroundImage: "url('cont_1.webp')" }}
       >
         <div className="bg-[#E6007E] text-center w-full py-1 rounded-md">
           <h3 className="font-bold text-base leading-tight tracking-wide">{locationName}</h3>

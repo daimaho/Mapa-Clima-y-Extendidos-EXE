@@ -1,6 +1,6 @@
 import React from 'react';
-import { ForecastDay } from '../types';
-import { ICON_PATH } from '../constants';
+import { ForecastDay } from './types';
+import { ICON_PATH } from './constants';
 
 interface WeatherCardProps {
   forecast: ForecastDay;
@@ -12,7 +12,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ forecast }) => {
   return (
     <div className="relative h-full rounded-2xl overflow-hidden text-white shadow-lg">
       <img 
-        src="/cont_2.webp" 
+        src="cont_2.webp" 
         className="absolute inset-0 w-full h-full object-cover z-0" 
         alt="Card background" 
       />

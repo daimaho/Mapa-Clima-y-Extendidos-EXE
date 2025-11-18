@@ -1,5 +1,6 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, protocol } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow;
 
@@ -7,24 +8,34 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
-    fullscreen: false, // Temporal para debugging
+    fullscreen: false,
     autoHideMenuBar: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webSecurity: false, // Permitir cargar archivos locales
     },
   });
 
-  // Determinar la ruta correcta dependiendo de si está empaquetado o no
   const isDev = !app.isPackaged;
-  const indexPath = isDev
-    ? path.join(__dirname, 'dist', 'index.html')
-    : path.join(process.resourcesPath, 'dist', 'index.html');
+  
+  // Registrar protocolo personalizado para servir archivos
+  protocol.registerFileProtocol('app', (request, callback) => {
+    const url = request.url.substr(6); // Quitar 'app://'
+    const filePath = path.normalize(`${__dirname}/dist/${url}`);
+    callback({ path: filePath });
+  });
 
-  console.log('Loading from:', indexPath);
-  mainWindow.loadFile(indexPath);
+  if (isDev) {
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    console.log('Loading from (dev):', indexPath);
+    mainWindow.loadFile(indexPath);
+  } else {
+    const indexPath = path.join(process.resourcesPath, 'app.asar', 'dist', 'index.html');
+    console.log('Loading from (prod):', indexPath);
+    mainWindow.loadFile(indexPath);
+  }
 
-  // Abrir DevTools para debugging
   mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', () => {
@@ -32,7 +43,22 @@ function createWindow() {
   });
 }
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+  // Registrar protocolo antes de crear la ventana
+  protocol.registerFileProtocol('local', (request, callback) => {
+    const url = request.url.replace('local://', '');
+    const isDev = !app.isPackaged;
+    const basePath = isDev ? __dirname : process.resourcesPath;
+    const filePath = path.join(basePath, 'dist', url);
+    
+    console.log('Requested:', url);
+    console.log('Resolved to:', filePath);
+    
+    callback({ path: filePath });
+  });
+
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   app.quit();

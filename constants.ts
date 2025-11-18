@@ -27,19 +27,15 @@ export const MAP_DISPLAY_LOCATIONS = [
   { name: "RESISTENCIA", shortName: "RESISTENCIA", pos: { top: '64%', left: '69%' } },
 ];
 
-export const WEATHER_CONDITION_MAP: { [key: number]: string } = {
-  200: 'storm', 201: 'storm', 202: 'storm', 210: 'storm', 211: 'storm',
-  212: 'storm', 221: 'storm', 230: 'storm', 231: 'storm', 232: 'storm',
-  300: 'drizzle', 301: 'drizzle', 302: 'drizzle', 310: 'drizzle', 311: 'drizzle',
-  312: 'drizzle', 313: 'drizzle', 314: 'drizzle', 321: 'drizzle',
-  500: 'rain', 501: 'rain', 502: 'rain', 503: 'rain', 504: 'rain',
-  511: 'rain', 520: 'rain', 521: 'rain', 522: 'rain', 531: 'rain',
-  600: 'rain', 601: 'rain', 602: 'rain', 611: 'rain', 612: 'rain',
-  613: 'rain', 615: 'rain', 616: 'rain', 620: 'rain', 621: 'rain', 622: 'rain',
-  701: 'fog', 711: 'fog', 721: 'fog', 731: 'fog', 741: 'fog',
-  751: 'fog', 761: 'fog', 762: 'fog', 771: 'wind', 781: 'wind',
-  800: 'clear',
-  801: 'partly_cloudy', 802: 'partly_cloudy', 803: 'cloudy', 804: 'cloudy',
+export const WEATHER_CONDITION_MAP: { [key: string]: { range: [number, number] } } = {
+  storm: { range: [200, 232] },
+  drizzle: { range: [300, 321] },
+  rain: { range: [500, 622] },
+  fog: { range: [701, 762] },
+  wind: { range: [771, 781] },
+  clear: { range: [800, 800] },
+  partly_cloudy: { range: [801, 802] },
+  cloudy: { range: [803, 804] },
 };
 
 export const CONDITION_PRIORITY: { [key: string]: number } = {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LOCATIONS, BACKGROUND_VIDEO_URL, API_KEY } from './constants';
-import { fetchWeatherForLocation } from './services/weatherService';
+import { fetchWeatherForLocation } from './weatherService';
 import type { ProcessedLocationData } from './types';
 import LocationDisplay from './components/LocationDisplay';
 import WeatherMap from './components/WeatherMap';
@@ -189,19 +189,23 @@ const App: React.FC = () => {
 
     return (
         <div className="relative w-screen h-screen bg-black overflow-hidden">
-            <video
-                src={BACKGROUND_VIDEO_URL}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute top-0 left-0 w-full h-full object-cover z-0"
-            ></video>
-            <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-40 z-10"></div>
-            
-            <main className={`relative z-20 w-full h-full ${view !== 'home' ? 'group' : ''}`}>
-                {view !== 'home' && <BackButton onClick={() => setView('home')} />}
-                <FullscreenButton />
+    {/* Video de fondo - z-0 */}
+    <video
+      src="bg.webm"
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="absolute top-0 left-0 w-full h-full object-cover z-0"
+    ></video>
+    
+    {/* Overlay oscuro - z-10 */}
+    <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-40 z-10"></div>
+    
+    {/* Contenido principal - z-20 (debe estar ENCIMA) */}
+    <main className={`relative z-20 w-full h-full ${view !== 'home' ? 'group' : ''}`}>
+      {view !== 'home' && <BackButton onClick={() => setView('home')} />}
+      <FullscreenButton />
 
                 {view === 'home' && (
                     <div className="flex flex-col items-center justify-center h-full text-white p-8 text-center">
