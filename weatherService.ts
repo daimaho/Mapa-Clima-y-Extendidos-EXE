@@ -38,19 +38,70 @@ export async function fetchWeatherForLocation(location: Location): Promise<Proce
     // Process 4-day forecast
     const forecast: ForecastDay[] = processDailyForecast(forecastData.list);
 
-    // Process today's forecast (morning, afternoon, night)
-    const todayForecast: TimeOfDayForecast[] = processTodayForecast(forecastData.list);
+    function processTodayForecast(list: any[]): TimeOfDayForecast[] {
+  const ARGENTINA_OFFSET = -3 * 3600;
+  
+  const periods = [
+    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11] },      // 6am-11am
+    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17] },   // 12pm-5pm
+    { period: 'NOCHE' as const, hours: [18, 19, 20, 21, 22, 23] },   // 6pm-11pm
+  ];
+
+  return periods.map(({ period, hours }) => {
+    let periodData = list.filter((item: any) => {
+      const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
+      const hour = new Date(adjustedTimestamp).getHours();
+      return hours.includes(hour);
+    });
+
+    if (periodData.length === 0) {
+      return {
+        period,
+        temp: 0,
+        icon: '01d',
+        pop: 'Sin datos',
+        weatherId: 800,
+      };
+    }
+
+    // ✅ CORRECCIÓN: Usar temperatura según período
+    let temp: number;
+    let representativeData: any;
+    
+    if (period === 'MAÑANA') {
+      // Para MAÑANA: usar temperatura promedio del inicio del rango
+      const morningData = periodData.slice(0, Math.ceil(periodData.length / 2));
+      temp = Math.round(
+        morningData.reduce((sum: number, d: any) => sum + d.main.temp, 0) / morningData.length
+      );
+      representativeData = morningData[0];
+    } else if (period === 'TARDE') {
+      // Para TARDE: usar MÁXIMA temperatura del rango
+      const temps = periodData.map((d: any) => d.main.temp);
+      temp = Math.round(Math.max(...temps));
+      representativeData = periodData.reduce((max: any, d: any) =>
+        d.main.temp > max.main.temp ? d : max
+      );
+    } else {
+      // Para NOCHE: usar temperatura promedio
+      temp = Math.round(
+        periodData.reduce((sum: number, d: any) => sum + d.main.temp, 0) / periodData.length
+      );
+      representativeData = periodData[Math.floor(periodData.length / 2)];
+    }
+
+    const avgPop = Math.round(
+      (periodData.reduce((sum: number, d: any) => sum + (d.pop || 0), 0) / periodData.length) * 100
+    );
 
     return {
-      location,
-      current,
-      forecast,
-      todayForecast,
+      period,
+      temp,
+      icon: representativeData.weather[0].icon,
+      pop: `${avgPop}% Lluvia`,
+      weatherId: representativeData.weather[0].id,
     };
-  } catch (error) {
-    console.error(`Error fetching weather for ${location.name}:`, error);
-    throw error;
-  }
+  });
 }
 
 function mapWeatherIcon(weatherId: number, iconCode: string): string {
@@ -116,69 +167,67 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
   const ARGENTINA_OFFSET = -3 * 3600; // UTC-3 in seconds
   
   const periods = [
-    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11] },
-    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17, 18] },
-    { period: 'NOCHE' as const, hours: [19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5] },
+    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11], fallbackHours: [6, 7, 8, 9, 10, 11] },
+    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17, 18], fallbackHours: [12, 13, 14, 15, 16, 17, 18] },
+    { period: 'NOCHE' as const, hours: [19, 20, 21, 22, 23], fallbackHours: [0, 1, 2, 3, 4, 5] },
   ];
 
-  return periods.map(({ period, hours }) => {
-    // Filtrar datos del período
+  return periods.map(({ period, hours, fallbackHours }) => {
+    // Try to find data matching the period hours in all available data
     let periodData = list.filter((item: any) => {
       const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
       const hour = new Date(adjustedTimestamp).getHours();
       return hours.includes(hour);
     });
 
-    // Fallback si no hay datos
+    // If no data found and fallback hours exist, try fallback hours
+    if (periodData.length === 0 && fallbackHours) {
+      periodData = list.filter((item: any) => {
+        const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
+        const hour = new Date(adjustedTimestamp).getHours();
+        return fallbackHours.includes(hour);
+      });
+    }
+
+    // If still no data, use the first available data point
     if (periodData.length === 0) {
+      const firstData = list[0];
+      if (firstData) {
+        return {
+          period,
+          temp: Math.round(firstData.main.temp),
+          icon: firstData.weather[0].icon,
+          pop: `${Math.round((firstData.pop || 0) * 100)}% Lluvia`,
+          weatherId: firstData.weather[0].id,
+        };
+      }
+      
+      // Absolute fallback if no data at all
       return {
         period,
         temp: 0,
-        icon: '01d',
+        icon: '01d', // Default icon code for clear day
         pop: 'Sin datos',
         weatherId: 800,
       };
     }
 
-    // CRÍTICO: Para TARDE, usar temperatura MÁXIMA, no promedio
-    let temp: number;
-    if (period === 'TARDE') {
-      const temps = periodData.map((d: any) => d.main.temp);
-      temp = Math.round(Math.max(...temps)); // ← MÁXIMA para la tarde
-    } else {
-      temp = Math.round(
-        periodData.reduce((sum: number, d: any) => sum + d.main.temp, 0) / periodData.length
-      );
-    }
-
-    // Calcular probabilidad de lluvia promedio
+    const avgTemp = Math.round(
+      periodData.reduce((sum: number, d: any) => sum + d.main.temp, 0) / periodData.length
+    );
+    
     const avgPop = Math.round(
       (periodData.reduce((sum: number, d: any) => sum + (d.pop || 0), 0) / periodData.length) * 100
     );
 
-    // CRÍTICO: Seleccionar icono de la condición MÁS FRECUENTE
-    const weatherIdCounts: { [key: number]: number } = {};
-    periodData.forEach((d: any) => {
-      const id = d.weather[0].id;
-      weatherIdCounts[id] = (weatherIdCounts[id] || 0) + 1;
-    });
-    
-    // Encontrar weatherId más frecuente
-    const mostFrequentWeatherId = Object.keys(weatherIdCounts).reduce((a, b) =>
-      weatherIdCounts[parseInt(a)] > weatherIdCounts[parseInt(b)] ? a : b
-    );
-
-    // Usar el icono de la entrada con ese weatherId
-    const representativeData = periodData.find(
-      (d: any) => d.weather[0].id === parseInt(mostFrequentWeatherId)
-    ) || periodData[Math.floor(periodData.length / 2)];
+    const midPeriodData = periodData[Math.floor(periodData.length / 2)];
 
     return {
       period,
-      temp,
-      icon: representativeData.weather[0].icon,
+      temp: avgTemp,
+      icon: midPeriodData.weather[0].icon, // Store raw icon code (e.g., "01d" or "01n")
       pop: `${avgPop}% Lluvia`,
-      weatherId: representativeData.weather[0].id,
+      weatherId: midPeriodData.weather[0].id,
     };
   });
 }
