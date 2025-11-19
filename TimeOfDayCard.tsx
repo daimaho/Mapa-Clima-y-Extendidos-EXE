@@ -1,12 +1,41 @@
 import React from 'react';
 import { TimeOfDayForecast } from './types';
-import { ICON_PATH } from './constants';
 
 interface TimeOfDayCardProps {
   forecast: TimeOfDayForecast;
 }
 
+const getWeatherIcon = (weatherId: number, icon: string): string => {
+  const isDay = icon.endsWith('d');
+  const prefix = isDay ? 'day-' : 'night-';
+  
+  let condition: string;
+  
+  if (weatherId >= 200 && weatherId <= 299) {
+    condition = 'storm';
+  } else if (weatherId >= 300 && weatherId <= 399) {
+    condition = 'drizzle';
+  } else if (weatherId >= 500 && weatherId <= 599) {
+    condition = 'rain';
+  } else if (weatherId >= 600 && weatherId <= 699) {
+    condition = 'snow';
+  } else if (weatherId >= 700 && weatherId <= 799) {
+    condition = 'fog';
+  } else if (weatherId === 800) {
+    condition = 'clear';
+  } else if (weatherId >= 801 && weatherId <= 802) {
+    condition = 'partly_cloudy';
+  } else {
+    condition = 'cloudy';
+  }
+  
+  return `icons/${prefix}${condition}.webm`;
+};
+
 const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
+  const iconPath = getWeatherIcon(forecast.weatherId, forecast.icon);
+  const hasData = forecast.pop !== 'Sin datos';
+  
   return (
     <div 
         className="relative w-[380px] h-[530px] bg-cover bg-center text-white flex flex-col items-center justify-between p-3 shadow-2xl rounded-2xl overflow-hidden"
@@ -17,18 +46,26 @@ const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
         </div>
 
         <div className="flex-grow flex flex-col items-center justify-center w-full -mt-4 pl-1">
-            <div className="w-44 h-44">
-                <video
-                    src={`${ICON_PATH}${forecast.icon}`}
-                    autoPlay loop muted playsInline
-                    className="w-full h-full object-contain drop-shadow-lg"
-                    key={forecast.icon}
-                ></video>
-            </div>
+            {hasData ? (
+              <>
+                <div className="w-44 h-44">
+                    <video
+                        src={iconPath}
+                        autoPlay loop muted playsInline
+                        className="w-full h-full object-contain drop-shadow-lg"
+                        key={iconPath}
+                    ></video>
+                </div>
 
-            <p className="font-bold text-8xl leading-none mt-2" style={{ textShadow: '3px 3px 6px rgba(0,0,0,0.5)' }}>
-                {forecast.temp}°C
-            </p>
+                <p className="font-bold text-8xl leading-none mt-2" style={{ textShadow: '3px 3px 6px rgba(0,0,0,0.5)' }}>
+                    {forecast.temp}°C
+                </p>
+              </>
+            ) : (
+              <p className="font-bold text-4xl" style={{ textShadow: '3px 3px 6px rgba(0,0,0,0.5)' }}>
+                Sin datos
+              </p>
+            )}
         </div>
 
         <div className="w-full mb-3 px-3 pl-1">
