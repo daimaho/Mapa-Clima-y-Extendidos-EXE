@@ -30,7 +30,17 @@ const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
   };
 
   return (
-    <div className="relative w-80 h-96 rounded-2xl overflow-hidden shadow-2xl">
+    <div 
+      className="relative rounded-2xl overflow-hidden shadow-2xl flex-shrink-0"
+      style={{ 
+        width: '320px',          // ← FIJO: Igual que imagen 9
+        height: '500px',         // ← FIJO: Mantiene proporción vertical
+        minWidth: '320px',
+        minHeight: '500px',
+        maxWidth: '320px',
+        maxHeight: '500px',
+      }}
+    >
       {/* Imagen de fondo cont_3.webp */}
       <img
         src="cont_3.webp"
@@ -41,13 +51,14 @@ const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
       {/* Contenido encima de la imagen */}
       <div className="relative z-10 flex flex-col h-full p-6">
         {/* Encabezado */}
-        <h3 className="text-2xl font-bold text-white mb-4 text-center bg-pink-600 rounded-lg py-2">
+        <h3 className="text-3xl font-bold text-white mb-4 text-center bg-pink-600 rounded-lg py-3">
           {forecast.period}
         </h3>
         
-        {/* Icono del clima */}
-        <div className="flex justify-center items-center mb-4 flex-1">
-          <div className="w-32 h-32">
+        {/* Icono del clima - MÁS GRANDE */}
+        <div className="flex justify-center items-center flex-1 mb-4">
+          <div style={{ width: '220px', height: '220px' }}>
+            {/* ↑ Icono GRANDE: 220px (era ~128px en imagen 9) */}
             <video
               src={getWeatherIcon(forecast.weatherId, forecast.icon, forecast.pop)}
               autoPlay
@@ -59,10 +70,13 @@ const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
           </div>
         </div>
         
-        {/* Temperatura y probabilidad */}
+        {/* Temperatura y probabilidad - MÁS GRANDE */}
         <div className="text-center">
-          <p className="text-6xl font-bold text-white mb-2">{forecast.temp}°C</p>
-          <p className="text-xl text-cyan-300 font-semibold bg-cyan-900/50 rounded-lg py-2 px-4">
+          <p className="text-8xl font-bold text-white mb-2" style={{ lineHeight: '1' }}>
+            {/* ↑ Temperatura GRANDE: text-8xl (era text-7xl) */}
+            {forecast.temp}°C
+          </p>
+          <p className="text-2xl text-cyan-300 font-semibold bg-cyan-900/50 rounded-lg py-3 px-4">
             {forecast.pop}
           </p>
         </div>
