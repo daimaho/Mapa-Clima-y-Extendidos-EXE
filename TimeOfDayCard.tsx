@@ -5,35 +5,56 @@ interface TimeOfDayCardProps {
   forecast: TimeOfDayForecast;
 }
 
-const getWeatherIcon = (weatherId: number, icon: string): string => {
+const getWeatherIcon = (weatherId: number, icon: string, pop: string): string => {
   const isDay = icon.endsWith('d');
   const prefix = isDay ? 'day-' : 'night-';
   
+  // Si la probabilidad de lluvia es muy baja (< 10%), ignorar códigos de lluvia
+  const popValue = parseInt(pop.replace(/[^0-9]/g, '')) || 0;
+  
   let condition: string;
   
-  if (weatherId >= 200 && weatherId <= 299) {
-    condition = 'storm';
-  } else if (weatherId >= 300 && weatherId <= 399) {
-    condition = 'drizzle';
-  } else if (weatherId >= 500 && weatherId <= 599) {
-    condition = 'rain';
-  } else if (weatherId >= 600 && weatherId <= 699) {
-    condition = 'snow';
-  } else if (weatherId >= 700 && weatherId <= 799) {
-    condition = 'fog';
-  } else if (weatherId === 800) {
-    condition = 'clear';
-  } else if (weatherId >= 801 && weatherId <= 802) {
-    condition = 'partly_cloudy';
+  if (popValue >= 10) { // Solo mostrar lluvia si >= 10%
+    if (weatherId >= 200 && weatherId <= 299) {
+      condition = 'storm';
+    } else if (weatherId >= 300 && weatherId <= 399) {
+      condition = 'drizzle';
+    } else if (weatherId >= 500 && weatherId <= 599) {
+      condition = 'rain';
+    } else if (weatherId >= 600 && weatherId <= 699) {
+      condition = 'snow';
+    } else if (weatherId >= 700 && weatherId <= 799) {
+      condition = 'fog';
+    } else if (weatherId === 800) {
+      condition = 'clear';
+    } else if (weatherId >= 801 && weatherId <= 802) {
+      condition = 'partly_cloudy';
+    } else {
+      condition = 'cloudy';
+    }
   } else {
-    condition = 'cloudy';
+    // Con baja probabilidad de lluvia, ignorar códigos de precipitación
+    if (weatherId >= 600 && weatherId <= 699) {
+      condition = 'snow';
+    } else if (weatherId >= 700 && weatherId <= 799) {
+      condition = 'fog';
+    } else if (weatherId === 800) {
+      condition = 'clear';
+    } else if (weatherId >= 801 && weatherId <= 802) {
+      condition = 'partly_cloudy';
+    } else if (weatherId >= 803) {
+      condition = 'cloudy';
+    } else {
+      // Para códigos de precipitación con baja probabilidad, mostrar despejado o parcialmente nublado
+      condition = 'clear';
+    }
   }
   
   return `icons/${prefix}${condition}.webm`;
 };
 
 const TimeOfDayCard: React.FC<TimeOfDayCardProps> = ({ forecast }) => {
-  const iconPath = getWeatherIcon(forecast.weatherId, forecast.icon);
+  const iconPath = getWeatherIcon(forecast.weatherId, forecast.icon, forecast.pop);
   const hasData = forecast.pop !== 'Sin datos';
   
   return (
