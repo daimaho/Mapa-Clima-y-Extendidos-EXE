@@ -96,8 +96,9 @@ function processDailyForecast(list: any[]): ForecastDay[] {
     const tempMin = Math.round(Math.min(...temps));
     
     const midDayData = dayData[Math.floor(dayData.length / 2)];
-    const date = new Date(dateKey);
-    const dayName = dayNames[date.getDay()];
+    // Use the adjusted timestamp to get the correct day name in Argentina timezone
+    const localDate = new Date((midDayData.dt + ARGENTINA_OFFSET) * 1000);
+    const dayName = dayNames[localDate.getUTCDay()];
     
     return {
       dayName,
@@ -112,7 +113,10 @@ function processDailyForecast(list: any[]): ForecastDay[] {
 
 function processTodayForecast(list: any[]): TimeOfDayForecast[] {
   const ARGENTINA_OFFSET = -3 * 3600; // UTC-3 in seconds
-  const today = new Date().toISOString().split('T')[0];
+  // Get current time in Argentina timezone
+  const now = new Date();
+  const argentinaTime = new Date(now.getTime() + ARGENTINA_OFFSET * 1000);
+  const today = argentinaTime.toISOString().split('T')[0];
   const todayData = list.filter((item: any) => {
     const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
     const itemDate = new Date(adjustedTimestamp).toISOString().split('T')[0];
