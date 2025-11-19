@@ -31,7 +31,8 @@ export async function fetchWeatherForLocation(location: Location): Promise<Proce
     const current: CurrentWeather = {
       temp: Math.round(currentData.main.temp),
       condition: currentData.weather[0].description,
-      icon: mapWeatherIcon(currentData.weather[0].id, currentData.weather[0].icon),
+      icon: currentData.weather[0].icon, // Store raw icon code (e.g., "01d" or "01n")
+      weatherId: currentData.weather[0].id,
     };
 
     // Process 4-day forecast
@@ -105,7 +106,7 @@ function processDailyForecast(list: any[]): ForecastDay[] {
       tempMax,
       tempMin,
       condition: midDayData.weather[0].description,
-      icon: mapWeatherIcon(midDayData.weather[0].id, midDayData.weather[0].icon),
+      icon: midDayData.weather[0].icon, // Store raw icon code (e.g., "01d" or "01n")
       weatherId: midDayData.weather[0].id,
     };
   });
@@ -113,34 +114,48 @@ function processDailyForecast(list: any[]): ForecastDay[] {
 
 function processTodayForecast(list: any[]): TimeOfDayForecast[] {
   const ARGENTINA_OFFSET = -3 * 3600; // UTC-3 in seconds
-  // Get current time in Argentina timezone
-  const now = new Date();
-  const argentinaTime = new Date(now.getTime() + ARGENTINA_OFFSET * 1000);
-  const today = argentinaTime.toISOString().split('T')[0];
-  const todayData = list.filter((item: any) => {
-    const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
-    const itemDate = new Date(adjustedTimestamp).toISOString().split('T')[0];
-    return itemDate === today;
-  });
-
+  
   const periods = [
-    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11] },
-    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17, 18] },
-    { period: 'NOCHE' as const, hours: [19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5] },
+    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11], fallbackHours: [6, 7, 8, 9, 10, 11] },
+    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17, 18], fallbackHours: [12, 13, 14, 15, 16, 17, 18] },
+    { period: 'NOCHE' as const, hours: [19, 20, 21, 22, 23], fallbackHours: [0, 1, 2, 3, 4, 5] },
   ];
 
-  return periods.map(({ period, hours }) => {
-    const periodData = todayData.filter((item: any) => {
+  return periods.map(({ period, hours, fallbackHours }) => {
+    // Try to find data matching the period hours in all available data
+    let periodData = list.filter((item: any) => {
       const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
       const hour = new Date(adjustedTimestamp).getHours();
       return hours.includes(hour);
     });
 
+    // If no data found and fallback hours exist, try fallback hours
+    if (periodData.length === 0 && fallbackHours) {
+      periodData = list.filter((item: any) => {
+        const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
+        const hour = new Date(adjustedTimestamp).getHours();
+        return fallbackHours.includes(hour);
+      });
+    }
+
+    // If still no data, use the first available data point
     if (periodData.length === 0) {
+      const firstData = list[0];
+      if (firstData) {
+        return {
+          period,
+          temp: Math.round(firstData.main.temp),
+          icon: firstData.weather[0].icon,
+          pop: `${Math.round((firstData.pop || 0) * 100)}% Lluvia`,
+          weatherId: firstData.weather[0].id,
+        };
+      }
+      
+      // Absolute fallback if no data at all
       return {
         period,
         temp: 0,
-        icon: 'icons/day-clear.webm',
+        icon: '01d', // Default icon code for clear day
         pop: 'Sin datos',
         weatherId: 800,
       };
@@ -159,7 +174,7 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
     return {
       period,
       temp: avgTemp,
-      icon: mapWeatherIcon(midPeriodData.weather[0].id, midPeriodData.weather[0].icon),
+      icon: midPeriodData.weather[0].icon, // Store raw icon code (e.g., "01d" or "01n")
       pop: `${avgPop}% Lluvia`,
       weatherId: midPeriodData.weather[0].id,
     };

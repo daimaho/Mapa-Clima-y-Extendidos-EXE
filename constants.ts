@@ -6,7 +6,7 @@ export const API_BASE_URL = "https://api.openweathermap.org/data/2.5/forecast";
 export const LOCATIONS: Location[] = [
   { name: "RESISTENCIA", subname: "Chaco", lat: -27.45186, lon: -58.98555 },
   { name: "TACO POZO", subname: "Chaco", lat: -25.61587, lon: -63.26795 },
-  { name: "JUAN JOSÉ CASTELLI", subname: "Chaco", lat: -25.94729, lon: -60.62034 },
+  { name: "J.J. CASTELLI", subname: "Chaco", lat: -25.94729, lon: -60.62034 },
   { name: "VILLA ÁNGELA", subname: "Chaco", lat: -27.57633, lon: -60.71179 },
   { name: "SAN MARTÍN", subname: "Chaco", lat: -26.53798, lon: -59.34202 },
   { name: "SÁENZ PEÑA", subname: "Chaco", lat: -26.80044, lon: -60.43123 },
@@ -17,7 +17,7 @@ export const LOCATIONS: Location[] = [
 
 export const MAP_DISPLAY_LOCATIONS = [
   { name: "TACO POZO", shortName: "TACO POZO", pos: { top: '25%', left: '26%' } },
-  { name: "JUAN JOSÉ CASTELLI", shortName: "J.J. CASTELLI", pos: { top: '24%', left: '44%' } },
+  { name: "J.J. CASTELLI", shortName: "J.J. CASTELLI", pos: { top: '24%', left: '44%' } },
   { name: "GANCEDO", shortName: "GANCEDO", pos: { top: '59%', left: '38%' } },
   { name: "CHARATA", shortName: "CHARATA", pos: { top: '49%', left: '46%' } },
   { name: "VILLA ÁNGELA", shortName: "VILLA ÁNGELA", pos: { top: '71%', left: '48%' } },

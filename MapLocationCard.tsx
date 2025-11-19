@@ -9,7 +9,36 @@ interface MapLocationCardProps {
   isVisible: boolean;
 }
 
+const getWeatherIcon = (weatherId: number, icon: string): string => {
+  const isDay = icon.endsWith('d');
+  const prefix = isDay ? 'day-' : 'night-';
+  
+  let condition: string;
+  
+  if (weatherId >= 200 && weatherId <= 299) {
+    condition = 'storm';
+  } else if (weatherId >= 300 && weatherId <= 399) {
+    condition = 'drizzle';
+  } else if (weatherId >= 500 && weatherId <= 599) {
+    condition = 'rain';
+  } else if (weatherId >= 600 && weatherId <= 699) {
+    condition = 'snow';
+  } else if (weatherId >= 700 && weatherId <= 799) {
+    condition = 'fog';
+  } else if (weatherId === 800) {
+    condition = 'clear';
+  } else if (weatherId >= 801 && weatherId <= 802) {
+    condition = 'partly_cloudy';
+  } else {
+    condition = 'cloudy';
+  }
+  
+  return `icons/${prefix}${condition}.webm`;
+};
+
 const MapLocationCard: React.FC<MapLocationCardProps> = ({ locationName, weather, position, isVisible }) => {
+  const iconPath = getWeatherIcon(weather.weatherId, weather.icon);
+  
   return (
     <div
       className="absolute w-[145px] h-[185px] transition-opacity duration-300"
@@ -38,13 +67,13 @@ const MapLocationCard: React.FC<MapLocationCardProps> = ({ locationName, weather
 
         <div className="w-24 h-24 mb-1">
           <video
-            src={`./${weather.icon}`}
+            src={iconPath}
             autoPlay
             loop
             muted
             playsInline
             className="w-full h-full object-contain drop-shadow-lg"
-            key={weather.icon}
+            key={iconPath}
           ></video>
         </div>
       </div>

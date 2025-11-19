@@ -19,6 +19,7 @@ export interface CurrentWeather {
     temp: number;
     condition: string;
     icon: string;
+    weatherId: number;
 }
 
 export interface TimeOfDayForecast {
