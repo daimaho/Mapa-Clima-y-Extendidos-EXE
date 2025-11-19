@@ -3,6 +3,9 @@ import { API_KEY, WEATHER_CONDITION_MAP } from './constants';
 
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
+// Argentina timezone offset (UTC-3)
+const ARGENTINA_OFFSET_SECONDS = -3 * 3600;
+
 export async function fetchWeatherForLocation(location: Location): Promise<ProcessedLocationData> {
   try {
     // Fetch current weather
@@ -71,7 +74,8 @@ function processDailyForecast(list: any[]): ForecastDay[] {
   const dailyData: { [key: string]: any[] } = {};
   
   list.forEach((item: any) => {
-    const date = new Date(item.dt * 1000);
+    // Apply Argentina timezone offset
+    const date = new Date((item.dt + ARGENTINA_OFFSET_SECONDS) * 1000);
     const dateKey = date.toISOString().split('T')[0];
     
     if (!dailyData[dateKey]) {
@@ -80,7 +84,8 @@ function processDailyForecast(list: any[]): ForecastDay[] {
     dailyData[dateKey].push(item);
   });
 
-  const days = Object.keys(dailyData).slice(0, 4);
+  // Skip day 0 (today) and take days 1-4 (next 4 days)
+  const days = Object.keys(dailyData).slice(1, 5);
   
   return days.map(dateKey => {
     const dayData = dailyData[dateKey];
@@ -97,15 +102,17 @@ function processDailyForecast(list: any[]): ForecastDay[] {
       tempMax,
       tempMin,
       condition: midDayData.weather[0].description,
-      icon: mapWeatherIcon(midDayData.weather[0].id, midDayData.weather[0].icon),
+      icon: midDayData.weather[0].icon, // Keep original icon code for day/night detection
+      weatherId: midDayData.weather[0].id,
     };
   });
 }
 
 function processTodayForecast(list: any[]): TimeOfDayForecast[] {
-  const today = new Date().toISOString().split('T')[0];
+  // Get today's date with Argentina timezone offset
+  const today = new Date(Date.now() + (ARGENTINA_OFFSET_SECONDS * 1000)).toISOString().split('T')[0];
   const todayData = list.filter((item: any) => {
-    const itemDate = new Date(item.dt * 1000).toISOString().split('T')[0];
+    const itemDate = new Date((item.dt + ARGENTINA_OFFSET_SECONDS) * 1000).toISOString().split('T')[0];
     return itemDate === today;
   });
 
@@ -117,7 +124,7 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
 
   return periods.map(({ period, hours }) => {
     const periodData = todayData.filter((item: any) => {
-      const hour = new Date(item.dt * 1000).getHours();
+      const hour = new Date((item.dt + ARGENTINA_OFFSET_SECONDS) * 1000).getHours();
       return hours.includes(hour);
     });
 
@@ -125,8 +132,9 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
       return {
         period,
         temp: 0,
-        icon: 'day-clear.mp4',
+        icon: '01d', // Default icon code
         pop: 'Sin datos',
+        weatherId: 800, // Default clear weather
       };
     }
 
@@ -143,8 +151,9 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
     return {
       period,
       temp: avgTemp,
-      icon: mapWeatherIcon(midPeriodData.weather[0].id, midPeriodData.weather[0].icon),
+      icon: midPeriodData.weather[0].icon, // Keep original icon code for day/night detection
       pop: `${avgPop}% Lluvia`,
+      weatherId: midPeriodData.weather[0].id,
     };
   });
 }

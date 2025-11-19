@@ -6,6 +6,24 @@ interface WeatherCardProps {
   forecast: ForecastDay;
 }
 
+// Function to map weather ID to icon file name
+const getWeatherIcon = (weatherId: number, iconCode: string): string => {
+  const isDay = iconCode.endsWith('d');
+  const prefix = isDay ? 'day-' : 'night-';
+  
+  let condition = 'clear';
+  if (weatherId >= 200 && weatherId < 300) condition = 'storm';
+  else if (weatherId >= 300 && weatherId < 400) condition = 'drizzle';
+  else if (weatherId >= 500 && weatherId < 600) condition = 'rain';
+  else if (weatherId >= 600 && weatherId < 700) condition = 'snow';
+  else if (weatherId >= 700 && weatherId < 800) condition = 'fog';
+  else if (weatherId === 800) condition = 'clear';
+  else if (weatherId === 801 || weatherId === 802) condition = 'partly_cloudy';
+  else if (weatherId >= 803) condition = 'cloudy';
+  
+  return `${ICON_PATH}${prefix}${condition}.webm`;
+};
+
 // NOTA: Este componente espera que un archivo de imagen llamado 'cont_2.webp'
 // se encuentre en la carpeta raíz del proyecto para usarlo como fondo.
 const WeatherCard: React.FC<WeatherCardProps> = ({ forecast }) => {
@@ -29,7 +47,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ forecast }) => {
             <div className="flex flex-col items-center justify-center">
                 <div className="w-40 h-40">
                     <video
-                        src={`${ICON_PATH}${forecast.icon}`}
+                        src={getWeatherIcon(forecast.weatherId, forecast.icon)}
                         autoPlay
                         loop
                         muted
