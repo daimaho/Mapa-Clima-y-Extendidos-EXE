@@ -116,67 +116,69 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
   const ARGENTINA_OFFSET = -3 * 3600; // UTC-3 in seconds
   
   const periods = [
-    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11], fallbackHours: [6, 7, 8, 9, 10, 11] },
-    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17, 18], fallbackHours: [12, 13, 14, 15, 16, 17, 18] },
-    { period: 'NOCHE' as const, hours: [19, 20, 21, 22, 23], fallbackHours: [0, 1, 2, 3, 4, 5] },
+    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11] },
+    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17, 18] },
+    { period: 'NOCHE' as const, hours: [19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5] },
   ];
 
-  return periods.map(({ period, hours, fallbackHours }) => {
-    // Try to find data matching the period hours in all available data
+  return periods.map(({ period, hours }) => {
+    // Filtrar datos del período
     let periodData = list.filter((item: any) => {
       const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
       const hour = new Date(adjustedTimestamp).getHours();
       return hours.includes(hour);
     });
 
-    // If no data found and fallback hours exist, try fallback hours
-    if (periodData.length === 0 && fallbackHours) {
-      periodData = list.filter((item: any) => {
-        const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
-        const hour = new Date(adjustedTimestamp).getHours();
-        return fallbackHours.includes(hour);
-      });
-    }
-
-    // If still no data, use the first available data point
+    // Fallback si no hay datos
     if (periodData.length === 0) {
-      const firstData = list[0];
-      if (firstData) {
-        return {
-          period,
-          temp: Math.round(firstData.main.temp),
-          icon: firstData.weather[0].icon,
-          pop: `${Math.round((firstData.pop || 0) * 100)}% Lluvia`,
-          weatherId: firstData.weather[0].id,
-        };
-      }
-      
-      // Absolute fallback if no data at all
       return {
         period,
         temp: 0,
-        icon: '01d', // Default icon code for clear day
+        icon: '01d',
         pop: 'Sin datos',
         weatherId: 800,
       };
     }
 
-    const avgTemp = Math.round(
-      periodData.reduce((sum: number, d: any) => sum + d.main.temp, 0) / periodData.length
-    );
-    
+    // CRÍTICO: Para TARDE, usar temperatura MÁXIMA, no promedio
+    let temp: number;
+    if (period === 'TARDE') {
+      const temps = periodData.map((d: any) => d.main.temp);
+      temp = Math.round(Math.max(...temps)); // ← MÁXIMA para la tarde
+    } else {
+      temp = Math.round(
+        periodData.reduce((sum: number, d: any) => sum + d.main.temp, 0) / periodData.length
+      );
+    }
+
+    // Calcular probabilidad de lluvia promedio
     const avgPop = Math.round(
       (periodData.reduce((sum: number, d: any) => sum + (d.pop || 0), 0) / periodData.length) * 100
     );
 
-    const midPeriodData = periodData[Math.floor(periodData.length / 2)];
+    // CRÍTICO: Seleccionar icono de la condición MÁS FRECUENTE
+    const weatherIdCounts: { [key: number]: number } = {};
+    periodData.forEach((d: any) => {
+      const id = d.weather[0].id;
+      weatherIdCounts[id] = (weatherIdCounts[id] || 0) + 1;
+    });
+    
+    // Encontrar weatherId más frecuente
+    const mostFrequentWeatherId = Object.keys(weatherIdCounts).reduce((a, b) =>
+      weatherIdCounts[parseInt(a)] > weatherIdCounts[parseInt(b)] ? a : b
+    );
+
+    // Usar el icono de la entrada con ese weatherId
+    const representativeData = periodData.find(
+      (d: any) => d.weather[0].id === parseInt(mostFrequentWeatherId)
+    ) || periodData[Math.floor(periodData.length / 2)];
 
     return {
       period,
-      temp: avgTemp,
-      icon: midPeriodData.weather[0].icon, // Store raw icon code (e.g., "01d" or "01n")
+      temp,
+      icon: representativeData.weather[0].icon,
       pop: `${avgPop}% Lluvia`,
-      weatherId: midPeriodData.weather[0].id,
+      weatherId: representativeData.weather[0].id,
     };
   });
 }

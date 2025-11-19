@@ -9,37 +9,40 @@ interface WeatherMapProps {
 
 const WeatherMap: React.FC<WeatherMapProps> = ({ allWeatherData }) => {
   return (
-    <div className="absolute inset-0 flex items-center justify-center p-8">
-      <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] rounded-3xl overflow-hidden">
-        {/* Video de fondo del mapa */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-contain opacity-80"
-          src="mapa.webm"
-        />
-        
-        {/* Overlay para oscurecer un poco */}
-        <div className="absolute inset-0 bg-black/10" />
-        
-        {/* Tarjetas de ubicaciones encima del video */}
-        <div className="relative z-10">
-          {allWeatherData.map((data) => {
-            const mapLocation = MAP_DISPLAY_LOCATIONS.find(loc => loc.name === data.location.name);
-            const position = mapLocation?.pos || { top: '50%', left: '50%' };
-            return (
-              <MapLocationCard
-                key={data.location.name}
-                locationName={data.location.name}
-                weather={data.current}
-                position={position}
-                isVisible={true}
-              />
-            );
-          })}
-        </div>
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Video del mapa como fondo */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        src="mapa.webm"
+      />
+      
+      {/* Overlay oscuro opcional */}
+      <div className="absolute inset-0 bg-black/10" />
+      
+      {/* Contenedor de tarjetas con posicionamiento absoluto */}
+      <div className="absolute inset-0">
+        {allWeatherData.map((data) => {
+          // Buscar posición en MAP_DISPLAY_LOCATIONS
+          const locationConfig = MAP_DISPLAY_LOCATIONS.find(
+            loc => loc.name === data.location.name
+          );
+          
+          if (!locationConfig) return null;
+          
+          return (
+            <MapLocationCard
+              key={data.location.name}
+              locationName={locationConfig.shortName}
+              weather={data.current}
+              position={locationConfig.pos}
+              isVisible={true}
+            />
+          );
+        })}
       </div>
     </div>
   );
