@@ -1,80 +1,76 @@
 import React from 'react';
-import { CurrentWeather } from './types';
-import { ICON_PATH } from './constants';
 
 interface MapLocationCardProps {
   locationName: string;
-  weather: CurrentWeather;
-  position: { top: string; left: string };
-  isVisible: boolean;
+  temp: number;
+  icon: string;
+  weatherId: number;
 }
 
-const getWeatherIcon = (weatherId: number, icon: string): string => {
-  const isDay = icon.endsWith('d');
-  const prefix = isDay ? 'day-' : 'night-';
-  
-  let condition: string;
-  
-  if (weatherId >= 200 && weatherId <= 299) {
-    condition = 'storm';
-  } else if (weatherId >= 300 && weatherId <= 399) {
-    condition = 'drizzle';
-  } else if (weatherId >= 500 && weatherId <= 599) {
-    condition = 'rain';
-  } else if (weatherId >= 600 && weatherId <= 699) {
-    condition = 'snow';
-  } else if (weatherId >= 700 && weatherId <= 799) {
-    condition = 'fog';
-  } else if (weatherId === 800) {
-    condition = 'clear';
-  } else if (weatherId >= 801 && weatherId <= 802) {
-    condition = 'partly_cloudy';
-  } else {
-    condition = 'cloudy';
-  }
-  
-  return `icons/${prefix}${condition}.webm`;
-};
+const MapLocationCard: React.FC<MapLocationCardProps> = ({ 
+  locationName, 
+  temp, 
+  icon, 
+  weatherId 
+}) => {
+  const getWeatherIcon = (weatherId: number, iconCode: string): string => {
+    const isDay = iconCode.endsWith('d');
+    const prefix = isDay ? 'day-' : 'night-';
+    
+    let condition = 'clear';
+    
+    if (weatherId >= 200 && weatherId <= 299) condition = 'storm';
+    else if (weatherId >= 300 && weatherId <= 399) condition = 'drizzle';
+    else if (weatherId >= 500 && weatherId <= 599) condition = 'rain';
+    else if (weatherId >= 600 && weatherId <= 699) condition = 'snow';
+    else if (weatherId >= 700 && weatherId <= 799) condition = 'fog';
+    else if (weatherId === 800) condition = 'clear';
+    else if (weatherId === 801 || weatherId === 802) condition = 'partly_cloudy';
+    else if (weatherId >= 803) condition = 'cloudy';
+    
+    return `icons/${prefix}${condition}.webm`;
+  };
 
-const MapLocationCard: React.FC<MapLocationCardProps> = ({ locationName, weather, position, isVisible }) => {
-  const iconPath = getWeatherIcon(weather.weatherId, weather.icon);
-  
   return (
-    <div
-      className="absolute w-[145px] h-[185px] transition-opacity duration-300"
-      style={{
-        ...position,
-        opacity: isVisible ? 1 : 0,
-        transform: 'translate(-50%, -50%)',
-      }}
-    >
-      <div 
-        className="relative w-full h-full bg-cover bg-center text-white flex flex-col items-center justify-between p-1 rounded-lg shadow-2xl"
-        style={{ backgroundImage: "url('cont_1.webp')" }}
-      >
-        <div className="bg-[#E6007E] text-center w-full py-1 rounded-md">
-          <h3 className="font-bold text-base leading-tight tracking-wide">{locationName}</h3>
+    <div className="relative rounded-lg overflow-hidden shadow-2xl" style={{ width: '120px', height: '165px' }}>
+      {/* Imagen de fondo cont_3.webp */}
+      <img
+        src="/cont_3.webp"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      
+      {/* Contenido encima de la imagen */}
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Nombre de la localidad con fondo #e50077 */}
+        <div 
+          className="text-center px-2 py-1"
+          style={{ backgroundColor: '#e50077' }}
+        >
+          <h3 className="text-xs font-bold text-white uppercase leading-tight">
+            {locationName}
+          </h3>
         </div>
         
-        <div className="flex-grow flex items-center justify-center">
-          <p 
-            className="font-bold text-6xl"
-            style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.7)' }}
-          >
-            {weather.temp}°
+        {/* Temperatura en el medio - MÁS GRANDE */}
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-5xl font-bold text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+            {temp}°
           </p>
         </div>
-
-        <div className="w-24 h-24 mb-1">
-          <video
-            src={iconPath}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-contain drop-shadow-lg"
-            key={iconPath}
-          ></video>
+        
+        {/* Icono abajo */}
+        <div className="flex justify-center pb-2">
+          <div style={{ width: '70px', height: '70px' }}>
+            <video
+              src={getWeatherIcon(weatherId, icon)}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-contain drop-shadow-lg"
+            ></video>
+          </div>
         </div>
       </div>
     </div>
@@ -82,5 +78,3 @@ const MapLocationCard: React.FC<MapLocationCardProps> = ({ locationName, weather
 };
 
 export default MapLocationCard;
-
-
