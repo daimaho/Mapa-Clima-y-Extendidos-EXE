@@ -69,9 +69,12 @@ function mapWeatherIcon(weatherId: number, iconCode: string): string {
 
 function processDailyForecast(list: any[]): ForecastDay[] {
   const dailyData: { [key: string]: any[] } = {};
+  const ARGENTINA_OFFSET = -3 * 3600; // UTC-3 in seconds
   
   list.forEach((item: any) => {
-    const date = new Date(item.dt * 1000);
+    // Adjust timestamp to Argentina timezone
+    const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
+    const date = new Date(adjustedTimestamp);
     const dateKey = date.toISOString().split('T')[0];
     
     if (!dailyData[dateKey]) {
@@ -80,7 +83,11 @@ function processDailyForecast(list: any[]): ForecastDay[] {
     dailyData[dateKey].push(item);
   });
 
-  const days = Object.keys(dailyData).slice(0, 4);
+  // Get next 4 days excluding today (index 1 to 4 instead of 0 to 3)
+  const allDays = Object.keys(dailyData).sort();
+  const days = allDays.slice(1, 5);
+  
+  const dayNames = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
   
   return days.map(dateKey => {
     const dayData = dailyData[dateKey];
@@ -90,7 +97,7 @@ function processDailyForecast(list: any[]): ForecastDay[] {
     
     const midDayData = dayData[Math.floor(dayData.length / 2)];
     const date = new Date(dateKey);
-    const dayName = date.toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+    const dayName = dayNames[date.getDay()];
     
     return {
       dayName,
@@ -98,26 +105,30 @@ function processDailyForecast(list: any[]): ForecastDay[] {
       tempMin,
       condition: midDayData.weather[0].description,
       icon: mapWeatherIcon(midDayData.weather[0].id, midDayData.weather[0].icon),
+      weatherId: midDayData.weather[0].id,
     };
   });
 }
 
 function processTodayForecast(list: any[]): TimeOfDayForecast[] {
+  const ARGENTINA_OFFSET = -3 * 3600; // UTC-3 in seconds
   const today = new Date().toISOString().split('T')[0];
   const todayData = list.filter((item: any) => {
-    const itemDate = new Date(item.dt * 1000).toISOString().split('T')[0];
+    const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
+    const itemDate = new Date(adjustedTimestamp).toISOString().split('T')[0];
     return itemDate === today;
   });
 
   const periods = [
-    { period: 'MAÑANA', hours: [6, 7, 8, 9, 10, 11] },
-    { period: 'TARDE', hours: [12, 13, 14, 15, 16, 17, 18] },
-    { period: 'NOCHE', hours: [19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5] },
+    { period: 'MAÑANA' as const, hours: [6, 7, 8, 9, 10, 11] },
+    { period: 'TARDE' as const, hours: [12, 13, 14, 15, 16, 17, 18] },
+    { period: 'NOCHE' as const, hours: [19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5] },
   ];
 
   return periods.map(({ period, hours }) => {
     const periodData = todayData.filter((item: any) => {
-      const hour = new Date(item.dt * 1000).getHours();
+      const adjustedTimestamp = (item.dt + ARGENTINA_OFFSET) * 1000;
+      const hour = new Date(adjustedTimestamp).getHours();
       return hours.includes(hour);
     });
 
@@ -125,8 +136,9 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
       return {
         period,
         temp: 0,
-        icon: 'day-clear.mp4',
+        icon: 'icons/day-clear.webm',
         pop: 'Sin datos',
+        weatherId: 800,
       };
     }
 
@@ -145,6 +157,7 @@ function processTodayForecast(list: any[]): TimeOfDayForecast[] {
       temp: avgTemp,
       icon: mapWeatherIcon(midPeriodData.weather[0].id, midPeriodData.weather[0].icon),
       pop: `${avgPop}% Lluvia`,
+      weatherId: midPeriodData.weather[0].id,
     };
   });
 }

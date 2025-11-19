@@ -1,14 +1,42 @@
 import React from 'react';
 import { ForecastDay } from './types';
-import { ICON_PATH } from './constants';
 
 interface WeatherCardProps {
   forecast: ForecastDay;
 }
 
+const getWeatherIcon = (weatherId: number, icon: string): string => {
+  const isDay = icon.endsWith('d');
+  const prefix = isDay ? 'day-' : 'night-';
+  
+  let condition: string;
+  
+  if (weatherId >= 200 && weatherId <= 299) {
+    condition = 'storm';
+  } else if (weatherId >= 300 && weatherId <= 399) {
+    condition = 'drizzle';
+  } else if (weatherId >= 500 && weatherId <= 599) {
+    condition = 'rain';
+  } else if (weatherId >= 600 && weatherId <= 699) {
+    condition = 'snow';
+  } else if (weatherId >= 700 && weatherId <= 799) {
+    condition = 'fog';
+  } else if (weatherId === 800) {
+    condition = 'clear';
+  } else if (weatherId >= 801 && weatherId <= 802) {
+    condition = 'partly_cloudy';
+  } else {
+    condition = 'cloudy';
+  }
+  
+  return `icons/${prefix}${condition}.webm`;
+};
+
 // NOTA: Este componente espera que un archivo de imagen llamado 'cont_2.webp'
 // se encuentre en la carpeta raíz del proyecto para usarlo como fondo.
 const WeatherCard: React.FC<WeatherCardProps> = ({ forecast }) => {
+  const iconPath = getWeatherIcon(forecast.weatherId, forecast.icon);
+  
   return (
     <div className="relative h-full rounded-2xl overflow-hidden text-white shadow-lg">
       <img 
@@ -29,13 +57,13 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ forecast }) => {
             <div className="flex flex-col items-center justify-center">
                 <div className="w-40 h-40">
                     <video
-                        src={`${ICON_PATH}${forecast.icon}`}
+                        src={iconPath}
                         autoPlay
                         loop
                         muted
                         playsInline
                         className="w-full h-full object-contain"
-                        key={forecast.icon}
+                        key={iconPath}
                     ></video>
                 </div>
                 <p 

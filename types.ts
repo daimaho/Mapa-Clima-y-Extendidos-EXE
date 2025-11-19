@@ -12,6 +12,7 @@ export interface ForecastDay {
   tempMin: number;
   condition: string;
   icon: string;
+  weatherId: number;
 }
 
 export interface CurrentWeather {
@@ -25,13 +26,14 @@ export interface TimeOfDayForecast {
   temp: number;
   icon: string;
   pop: string; // Formatted probability of precipitation string, e.g., "10-40%"
+  weatherId: number;
 }
 
 export interface ProcessedLocationData {
   location: Location;
-  forecasts: ForecastDay[];
-  currentWeather: CurrentWeather;
-  timeOfDayForecasts: TimeOfDayForecast[];
+  forecast: ForecastDay[];
+  current: CurrentWeather;
+  todayForecast: TimeOfDayForecast[];
 }
 
 // Interfaces for OpenWeatherMap API response
